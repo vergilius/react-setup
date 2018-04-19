@@ -1,0 +1,85 @@
+{
+  "name": "react-setup",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "js-lint": "eslint --ext .js --ext .jsx src",
+    "js-unit": "jest --coverage",
+    "scss-lint": "sass-lint -c node_modules/frontend-tools-configs/.sass-lint.yml -v -q",
+    "run-server": "superstatic --gzip -p 8080 --host 0.0.0.0 dist/",
+    "test": "yarn js-lint && yarn scss-lint && yarn js-unit",
+    "watch": "yarn webpack --watch & yarn run-server",
+    "build-dev": "yarn webpack",
+    "build-production": "yarn webpack --env.production"
+  },
+  "devDependencies": {
+    "autoprefixer": "^8.2.0",
+    "babel-core": "^6.24.1",
+    "babel-eslint": "8.2.2",
+    "babel-jest": "^22.4.3",
+    "babel-loader": "^7.1.2",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-object-rest-spread": "^6.8.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-react": "^6.24.1",
+    "classnames": "^2.2.5",
+    "clean-webpack-plugin": "^0.1.18",
+    "copy-webpack-plugin": "^4.3.1",
+    "css-loader": "^0.28.9",
+    "enzyme": "^3.2.0",
+    "enzyme-adapter-react-16": "^1.1.0",
+    "extract-text-webpack-plugin": "^4.0.0-beta.0",
+    "frontend-tools-configs": "git+https://github.com/brainly/frontend-tools-configs.git#v16.2.7",
+    "html-webpack-plugin": "^3.2.0",
+    "jest": "22.4.3",
+    "jest-teamcity-reporter": "^0.9.0",
+    "node-sass": "^4.8.3",
+    "postcss-loader": "^2.0.10",
+    "prop-types": "^15.5.10",
+    "react": "^16.3.1",
+    "react-dom": "^16.3.1",
+    "react-redux": "^5.0.5",
+    "redux": "^3.7.2",
+    "redux-thunk": "^2.2.0",
+    "sass-lint": "^1.10.2",
+    "sass-loader": "^6.0.6",
+    "superstatic": "^5.0.1",
+    "webpack": "^4.5.0",
+    "webpack-cli": "^2.0.14"
+  },
+  "jest": {
+    "rootDir": "./src",
+    "roots": [
+      "<rootDir>"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/"
+    ],
+    "transform": {
+      ".*": "babel-jest"
+    },
+    "transformIgnorePatterns": [],
+    "moduleDirectories": [
+      "node_modules/"
+    ],
+    "moduleNameMapper": {
+      "^.+\\.(css|less|scss)$": "babel-jest"
+    },
+    "setupFiles": [
+      "<rootDir>/../scripts/testsSetup.js"
+    ],
+    "coveragePathIgnorePatterns": [
+      "node_modules/"
+    ],
+    "coverageDirectory": "<rootDir>/../coverage",
+    "coverageThreshold": {
+      "global": {
+        "branches": 90,
+        "functions": 90,
+        "lines": 90,
+        "statements": 90
+      }
+    },
+    "testResultsProcessor": "jest-teamcity-reporter"
+  }
+}
