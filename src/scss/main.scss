@@ -1,0 +1,56 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  width: 100%;
+  height: 100%;
+  min-height: 1000px;
+  overflow-x: hidden;
+}
+
+.brn-element-container {
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  background: #ff796b;
+  top: 150px;
+  left: 400px;
+  z-index: 99;
+  margin: 1px;
+
+  &:hover {
+    opacity: 0.7;
+    cursor: pointer;
+    margin: 0;
+    border: 1px dashed black;
+  }
+}
+
+.text {
+  font-size: 42px;
+  font-weight: bold;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  opacity: 0;
+  transition: opacity 0.5s linear;
+  position: absolute;
+  padding: 20px;
+
+  &--visible {
+    opacity: 1;
+  }
+}
+
+.speech-bubble {
+  position: absolute;
+
+  svg {
+    left: 0;
+    top: 0;
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    transition: all 1s ease-in-out;
+    fill: #fec83c;
+  }
+}

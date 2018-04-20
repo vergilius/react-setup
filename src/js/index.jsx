@@ -1,34 +1,45 @@
-import 'regenerator-runtime/runtime';
-import React from 'react';
-import ReactDOM from 'react-dom';
-import {Provider} from 'react-redux';
+import '../scss/main.scss';
+import Bubble from './bubble';
 
-import {createStore, compose, applyMiddleware, combineReducers} from 'redux';
-import thunk from 'redux-thunk';
+const $element = document.querySelector('.js-container');
 
-const appReducer = combineReducers({
-  test: () => null
+let currentBubble = null;
+
+const calculateRelativeBubblePosition = element => {
+  const x = window.innerWidth - element.x > window.innerWidth / 2
+      ? 1
+      : -1;
+
+  const y = window.innerHeight - element.y > window.innerHeight / 2
+      ? 1
+      : -1;
+
+  return {
+    x,
+    y
+  };
+}
+
+const getLargestDimension = () => window.innerWidth > window.innerHeight ? window.innerWidth : window.innerHeight;
+
+$element.addEventListener('click', () => {
+  if (currentBubble) {
+    currentBubble.destroy();
+    currentBubble = null;
+  }
+
+  currentBubble = new Bubble({
+    container: document.body,
+    alignment: calculateRelativeBubblePosition($element.getBoundingClientRect()),
+    size: getLargestDimension()
+  });
+
+  currentBubble.render();
 });
 
-function createClientStore(history) {
-  const composeEnhancer = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+$element.addEventListener('dragend', event => {
+  $element.style.left = `${event.pageX}px`;
+  $element.style.top = `${event.pageY}px`;
 
-  return createStore(
-    appReducer,
-    composeEnhancer(applyMiddleware(
-      thunk
-    ))
-  );
-}
-
-
-const root = document.getElementById('js-root');
-
-if (root) {
-  const store = createClientStore();
-
-  ReactDOM.render(
-    <Provider store={store}>
-      <div>hey man</div>
-    </Provider>, root);
-}
+  event.stopPropagation();
+});
