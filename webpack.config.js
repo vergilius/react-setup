@@ -1,90 +1,127 @@
 const path = require('path');
-const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
-const autoprefixer = require('autoprefixer');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const {CleanWebpackPlugin} = require('clean-webpack-plugin');
+const WorkboxPlugin = require('workbox-webpack-plugin');
+const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 
-const SRC = path.resolve(__dirname, 'src');
-const DIST = path.resolve(__dirname, 'dist');
-const JS_PATH = path.join(SRC, 'js');
-const IMG_PATH = path.join(SRC, 'img');
-const NODE_MODULES_PATH = path.resolve(SRC, '../node_modules');
-
-const getPlugins = isProduction => {
-  const plugins = [
-    new CopyWebpackPlugin([{from: IMG_PATH, to: path.join(DIST, 'img')}]),
-    new ExtractTextPlugin('[name].[hash].css'),
-    new webpack.LoaderOptionsPlugin({options: {postcss: [autoprefixer]}}),
-    new webpack.DefinePlugin({
-      __IS_PRODUCTION__: JSON.stringify(isProduction)
-    }),
-    new HtmlWebpackPlugin({
-      chunks: ['index'],
-      filename: path.join(DIST, 'index.html'),
-      template: path.join(SRC, 'index.html')
-    }),
-    new CleanWebpackPlugin([DIST])
-  ];
-
-  return plugins;
-};
+const DIST_PATH = path.resolve(__dirname, 'dist');
+const SRC_PATH = path.resolve(__dirname, 'src');
+const NODE_MODULES_PATH = path.resolve(__dirname, 'node_modules');
 
 module.exports = env => {
   const isProduction = env && env.production;
-  const plugins = getPlugins(isProduction);
 
   return {
-    mode: isProduction ? 'production' : 'development',
-    resolve: {
-      modules: [
-        JS_PATH,
-        NODE_MODULES_PATH
-      ],
-      extensions: ['.js', '.jsx']
-    },
     entry: {
-      index: path.join(JS_PATH, 'index.jsx')
+      index: path.join(SRC_PATH, 'index.jsx'),
     },
     output: {
+      path: DIST_PATH,
+      filename: '[name]_[hash].js',
       publicPath: '/',
-      path: DIST,
-      filename: '[name].[hash].js'
     },
+    resolve: {
+      modules: [SRC_PATH, NODE_MODULES_PATH],
+      extensions: ['.js', '.jsx', '.css'],
+    },
+    mode: isProduction ? 'production' : 'development',
     module: {
       rules: [
         {
-          test: /\.js|.jsx$/,
-          loader: 'babel-loader',
-          exclude: /node_modules/
-        }, {
-          test: /\.scss|.css$/,
-          use: ExtractTextPlugin.extract({
-            use: [
-              {
-                loader: 'css-loader',
-                options: {
-                  minimize: isProduction,
-                  url: false
-                }
+          test: /\.(woff|woff2)$/,
+          use: [
+            {
+              loader: 'file-loader',
+              options: {
+                name: 'fonts/[name]_[hash].[ext]',
               },
-              {
-                loader: 'postcss-loader',
-                options: {
-                  minimize: isProduction,
-                  config: {
-                    path: './postcss.config.js'
-                  }
-                }
+            },
+          ],
+        },
+        {
+          test: /\.(png|jpg|jpeg|gif)$/i,
+          use: [
+            {
+              loader: 'file-loader',
+              options: {
+                name: 'images/[name].[ext]',
               },
-              {loader: 'sass-loader', options: {minimize: isProduction}}
-            ]
-          })
-        }
-      ]
+            },
+          ],
+        },
+        {
+          test: /\.svg$/,
+          use: [{loader: 'svg-sprite-loader'}],
+        },
+        {
+          test: /(\.js|.jsx)$/,
+          use: [{loader: 'babel-loader'}],
+        },
+        {
+          test: /\.css$/,
+          use: [
+            MiniCssExtractPlugin.loader,
+            {
+              loader: 'css-loader',
+              options: {
+                modules: true,
+                localIdentName: '[local]',
+                camelCase: 'only',
+                minimize: isProduction,
+              },
+            },
+          ],
+        },
+      ],
     },
-    plugins,
-    devtool: isProduction ? false : 'source-map'
+    optimization: {
+      minimize: isProduction,
+    },
+    plugins: [
+      new HtmlWebpackPlugin({
+        filename: path.join(DIST_PATH, 'index.html'),
+        template: path.join(SRC_PATH, 'index.html'),
+        chunks: ['index'],
+      }),
+      new CopyWebpackPlugin([
+        {
+          from: path.join(SRC_PATH, 'images'),
+          to: path.join(DIST_PATH, 'images'),
+        },
+        {
+          from: path.join(SRC_PATH, 'manifest.json'),
+          to: path.join(DIST_PATH, 'manifest.json'),
+        },
+        {
+          from: path.join(SRC_PATH, '.htaccess'),
+          to: path.join(DIST_PATH),
+        },
+        {
+          from: path.join(SRC_PATH, 'robots.txt'),
+          to: path.join(DIST_PATH, 'robots.txt'),
+        },
+        {
+          from: path.join(SRC_PATH, 'sitemap.xml'),
+          to: path.join(DIST_PATH, 'sitemap.xml'),
+        },
+      ]),
+      new MiniCssExtractPlugin({
+        filename: '[name]_[hash].css',
+        chunkFilename: '[id]_[hash].css',
+      }),
+      new OptimizeCssAssetsPlugin({
+        assetNameRegExp: /\.css$/g,
+        canPrint: true,
+      }),
+      new CleanWebpackPlugin(),
+      new WorkboxPlugin.GenerateSW({
+        swDest: 'serviceWorker.js',
+        clientsClaim: true,
+        skipWaiting: true,
+        exclude: [/^manifest.*\.js$/, /^.htaccess$/],
+      }),
+    ],
   };
 };
